@@ -20,6 +20,7 @@ options[:anon] = nil
 options[:config] = '/etc/proxychains.conf'
 options[:stdout] = false
 options[:shuffle] = false
+options[:pairs] = false
 
 optparse = OptionParser.new do |opts|
 	opts.banner = "Usage: proxadd.rb [-h] [-s] [-t TYPE] [-n NUMBER] [-cn CODE] [-a ANON] [-cf CONFIG]"
@@ -44,6 +45,9 @@ optparse = OptionParser.new do |opts|
     opts.on('-s', '--shuffle', 'Shuffle proxies list before adding to config file') do 
         options[:shuffle] = true
     end
+    opts.on('-p', '--pairs', 'Return proxies in <host>:<port> value pairs') do 
+        options[:pairs] = true
+    end
     opts.on('-h', '--help', 'Print help message') do
         puts opts
         exit
@@ -67,10 +71,15 @@ proxies.each do |proxy|
     proxy_addr = proxy.split(":")[0]
     proxy_port = proxy.split(":")[1]
     proxy_info_line = "#{options[:type]} #{proxy_addr} #{proxy_port}"
+    if options[:pairs]
+        proxy_info_line = "#{proxy_addr}:#{proxy_port}"
+    end
     if options[:stdout]
         puts proxy_info_line
     else
         config_file.puts(proxy_info_line)
     end
 end
-good("Added #{proxies.length} proxies to #{options[:config]}")
+if not options[:stdout] 
+    good("Added #{proxies.length} proxies to #{options[:config]}")
+end
